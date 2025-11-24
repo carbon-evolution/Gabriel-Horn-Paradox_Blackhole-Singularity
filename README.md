@@ -15,6 +15,11 @@ This program creates a stunning interactive visualization that illustrates:
 - **Photon Geodesics**: Animated light rays traveling through curved spacetime
 - **Event Horizon**: The boundary where escape velocity equals the speed of light
 
+## 📸 Visualization Preview
+
+![Black Hole Visualization](black_hole_visualization.png)
+*Interactive 3D visualization showing Gabriel's Horn geometry with gravitational redshift colors and animated photon geodesics*
+
 ## 🎯 The Paradox Connection
 
 **Gabriel's Horn** is created by rotating the curve `y = 1/x` around the x-axis. It has the remarkable property of having:
@@ -24,6 +29,9 @@ This program creates a stunning interactive visualization that illustrates:
 This mirrors the properties of **black hole singularities**:
 - As `x → 0` (approaching the singularity): radius → ∞ (infinite curvature)
 - As `x → ∞` (far from the black hole): radius → 0 (flat spacetime)
+
+![Paradox Connection](paradox_connection.png)
+*Mathematical connection between Gabriel's Horn paradox and black hole spacetime geometry*
 
 ## ✨ Features
 
@@ -49,6 +57,9 @@ This mirrors the properties of **black hole singularities**:
 - 🟡 **Yellow rays**: Photons that escape the black hole's gravity
 - 🔴 **Red rays**: Photons captured by the black hole
 - ⭕ **Bright markers**: Real-time photon position indicators
+
+![Light Ray Animation](light_ray_animation.png)
+*Animated photon geodesics showing how light travels through curved spacetime - yellow rays escape while red rays spiral inward*
 
 ## 🚀 Installation
 
