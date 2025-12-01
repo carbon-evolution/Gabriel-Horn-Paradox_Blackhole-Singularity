@@ -184,6 +184,14 @@ def black_hole_visualization():
         y_eh = schwarzschild_radius * np.sin(THETA) * np.sin(PHI_EH)
         z_eh = schwarzschild_radius * np.cos(THETA)
         return x_eh, y_eh, z_eh
+
+    def update_photon_sphere(schwarzschild_radius):
+        """Generate the photon sphere coordinates (1.5x Schwarzschild radius)."""
+        ps_radius = 1.5 * schwarzschild_radius
+        x_ps = ps_radius * np.sin(THETA) * np.cos(PHI_EH)
+        y_ps = ps_radius * np.sin(THETA) * np.sin(PHI_EH)
+        z_ps = ps_radius * np.cos(THETA)
+        return x_ps, y_ps, z_ps
     
     def calculate_redshift(X, Y, Z, schwarzschild_radius):
         """
@@ -234,12 +242,17 @@ def black_hole_visualization():
                 # Determine color based on trajectory
                 min_r = np.min(np.sqrt(x**2 + y**2 + z**2))
                 
-                if min_r < schwarzschild_radius * 1.1:
+                # Color logic based on user request:
+                # Red: Captured
+                # Orange: Critical scattering (near photon sphere at 1.5 Rs)
+                # Yellow: Escaped
+                
+                if min_r < schwarzschild_radius * 1.05:
                     color = 'red'      # Captured
                     alpha = 0.9
                     linewidth = 2.5
-                elif min_r < schwarzschild_radius * 1.6:
-                    color = 'orange'   # Grazing photon sphere (Strong Lensing)
+                elif min_r < schwarzschild_radius * 1.8:
+                    color = 'orange'   # Critical Scattering / Strong Lensing
                     alpha = 0.85
                     linewidth = 2.2
                 else:
@@ -260,20 +273,19 @@ def black_hole_visualization():
     
     # Add legend text for light rays
     light_explanation = (
-        "LIGHT RAY ANIMATION:\n"
-        "━━━━━━━━━━━━━━━━━━━━━\n"
+        "LIGHT RAY VISUALIZATION\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━\n"
         "🟡 YELLOW: Escaped\n"
-        "   - Deflected path\n"
-        "   - Escapes gravity\n\n"
+        "   - Photons escape gravity\n\n"
+        "🟠 ORANGE: Critical\n"
+        "   - Strong lensing\n"
+        "   - Near Photon Sphere\n\n"
         "🔴 RED: Captured\n"
-        "   - Spiral inward\n"
-        "   - Strong bending\n\n"
-        "▶️  PLAY: Animate\n"
-        "⏸️  PAUSE: Stop\n"
-        "🔄 AUTO-ROTATE: On\n\n"
-        "Watch photons travel\n"
-        "through curved\n"
-        "spacetime in REAL TIME!"
+        "   - Fall into Black Hole\n\n"
+        "🔵 CYAN SPHERE:\n"
+        "   - Photon Sphere (1.5 Rs)\n\n"
+        "⭕ BRIGHT MARKERS:\n"
+        "   - Real-time position"
     )
     
     # Add color explanation text
@@ -320,10 +332,15 @@ def black_hole_visualization():
                              alpha=0.7, shade=True, linewidth=0, 
                              antialiased=True, edgecolor='none')
         
-        # Plot event horizon sphere
+        # Plot event horizon sphere (Black)
         x_eh, y_eh, z_eh = update_event_horizon(schwarzschild_radius)
         horizon = ax.plot_surface(x_eh, y_eh, z_eh, color='black', 
-                                alpha=0.85, shade=True, linewidth=0)
+                                alpha=0.95, shade=True, linewidth=0, zorder=10)
+
+        # Plot Photon Sphere (Cyan, wireframe/transparent)
+        x_ps, y_ps, z_ps = update_photon_sphere(schwarzschild_radius)
+        photon_sphere = ax.plot_wireframe(x_ps, y_ps, z_ps, color='cyan', 
+                                        alpha=0.15, linewidth=0.5, zorder=5)
         
         # Draw static light rays (full paths)
         if show_light_rays[0] and not animation_state['running']:
@@ -333,10 +350,12 @@ def black_hole_visualization():
                        linewidth=ray_data['linewidth']*0.7, linestyle='-')
         
         # Add labels
-        ax.text(0, 0, 0, "⚫\nSingularity", color='yellow', 
+        ax.text(0, 0, 0, "⚫\nSingularity", color='white', 
                fontsize=10, ha='center', weight='bold')
         ax.text(schwarzschild_radius, 0, schwarzschild_radius/2, 
-               "Event Horizon", color='cyan', fontsize=9, ha='center')
+               "Event Horizon", color='white', fontsize=8, ha='center')
+        ax.text(schwarzschild_radius*1.5, 0, schwarzschild_radius*1.5, 
+               "Photon Sphere", color='cyan', fontsize=8, ha='center')
         
         # Set plot limits with zoom control
         zoom_factor = zoom_slider.val
@@ -418,10 +437,11 @@ def black_hole_visualization():
                         
                         # Draw a bright "photon" marker at the front
                         if end_idx > 0 and end_idx < total_points:
+                            # Bright marker with white center and colored edge
                             marker = ax.scatter([x[end_idx-1]], [y[end_idx-1]], [z[end_idx-1]],
-                                              color=ray_data['color'], s=100, 
-                                              alpha=1.0, marker='o', edgecolors='white',
-                                              linewidths=1.5)
+                                              c='white', s=120, 
+                                              alpha=1.0, marker='o', edgecolors=ray_data['color'],
+                                              linewidths=2.0, zorder=20)
                             animation_state['animated_objects'].append(marker)
         
         return animation_state['animated_objects']
@@ -574,21 +594,11 @@ if __name__ == "__main__":
     print("-" * 80)
     print("Watch photons (light particles) travel along their curved paths!")
     print()
-    print("YELLOW rays with markers: Escaping photons")
-    print("   - Bent by gravity but maintain escape velocity")
-    print("   - Show gravitational lensing in action")
-    print()
-    print("ORANGE rays with markers: Critical Scattering")
-    print("   - Grazing the Photon Sphere (1.5 Rs)")
-    print("   - Strong gravitational lensing")
-    print()
-    print("RED rays with markers: Captured photons")
-    print("   - Spiral inward toward event horizon")
-    print("   - Demonstrate extreme spacetime curvature")
-    print()
-    print("CYAN sphere: Photon Sphere (1.5x Rs)")
-    print("   - Unstable circular orbit region")
-    print("-" * 80)
+    print("YELLOW rays : Escaping photons")
+    print("ORANGE rays : Critical scattering (near Photon Sphere)")
+    print("RED rays    : Captured photons")
+    print("CYAN sphere : Photon Sphere (1.5x Schwarzschild Radius)")
+    print("=" * 80)
     print("\n*** COLOR SCHEME:")
     print("RED spacetime   : Extreme gravitational redshift (near horizon)")
     print("PURPLE spacetime: Medium gravitational effects")

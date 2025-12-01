@@ -14,6 +14,7 @@ This program creates a stunning interactive visualization that illustrates:
 - **Gravitational Redshift**: Visual representation using color gradients
 - **Photon Geodesics**: Animated light rays traveling through curved spacetime
 - **Event Horizon**: The boundary where escape velocity equals the speed of light
+- **Photon Sphere**: The region where gravity is strong enough that photons are forced into orbits
 
 ## 📸 Visualization Preview
 
@@ -61,7 +62,7 @@ This mirrors the properties of **black hole singularities**:
 - ⭕ **Bright markers**: Real-time photon position indicators
 
 ![Light Ray Animation](light_ray_animation.png)
-*Animated photon geodesics showing how light travels through curved spacetime - yellow rays escape while red rays spiral inward*
+*Animated photon geodesics showing how light travels through curved spacetime - yellow rays escape, orange rays scatter, while red rays spiral inward*
 
 ## 🚀 Installation
 
