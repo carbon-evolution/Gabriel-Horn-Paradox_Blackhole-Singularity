@@ -53,9 +53,11 @@ This mirrors the properties of **black hole singularities**:
 - 🔵 **Blue regions**: Weak gravitational effects (far from black hole)
 - ⚫ **Black sphere**: Event horizon (point of no return)
 
-### Light Ray Visualization
+### Light Ray Visualization (Now in 3D!)
 - 🟡 **Yellow rays**: Photons that escape the black hole's gravity
+- 🟠 **Orange rays**: Critical scattering (strong lensing) near photon sphere
 - 🔴 **Red rays**: Photons captured by the black hole
+- 🔵 **Cyan sphere**: Photon sphere at 1.5x Schwarzschild radius
 - ⭕ **Bright markers**: Real-time photon position indicators
 
 ![Light Ray Animation](light_ray_animation.png)

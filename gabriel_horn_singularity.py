@@ -93,9 +93,9 @@ def photon_geodesic_schwarzschild(t, y, rs):
     
     return [dr_dt, dphi_dt, d2r_dt2, d2phi_dt2]
 
-def calculate_light_ray(start_r, start_angle, impact_parameter, rs, max_t=50):
+def calculate_light_ray(start_r, start_angle, impact_parameter, rs, max_t=50, z_offset=0.0, z_velocity=0.0):
     """
-    Calculate a light ray trajectory around the black hole.
+    Calculate a light ray trajectory around the black hole in 3D.
     
     Parameters:
     - start_r: starting radial distance
@@ -103,6 +103,8 @@ def calculate_light_ray(start_r, start_angle, impact_parameter, rs, max_t=50):
     - impact_parameter: determines how close the ray passes to black hole
     - rs: Schwarzschild radius
     - max_t: maximum integration time
+    - z_offset: initial z-coordinate (for 3D trajectories)
+    - z_velocity: initial z-velocity component
     
     Returns:
     - x, y, z coordinates of the light ray path
@@ -129,10 +131,14 @@ def calculate_light_ray(start_r, start_angle, impact_parameter, rs, max_t=50):
         r = sol.y[0]
         phi = sol.y[1]
         
-        # Convert polar to Cartesian (in x-y plane, then add z=0)
+        # Convert polar to Cartesian with 3D z-component
         x = r * np.cos(phi)
         y = r * np.sin(phi)
-        z = np.zeros_like(x)
+        
+        # Add 3D z-component that varies with trajectory
+        # Simple model: z oscillates/decays as photon spirals
+        t_normalized = sol.t / max_t
+        z = z_offset * np.exp(-t_normalized * 0.5) * np.cos(phi * 2 + z_velocity)
         
         return x, y, z
     except:
@@ -198,30 +204,48 @@ def black_hole_visualization():
         """Pre-calculate all light ray trajectories for animation."""
         animation_state['light_rays_data'] = []
         
-        # Generate multiple light rays with different impact parameters
-        num_rays = 8
+        # Specific impact parameter multipliers to show different behaviors
+        # Critical value is ~2.6 (3*sqrt(3)/2)
+        # We want rays that get VERY close to the photon sphere (1.5 Rs)
+        impact_multipliers = [
+            1.8, 2.2, 2.4, 2.5,      # Captured (Red)
+            2.58, 2.62, 2.7, 2.85,   # Critical/Strong Lensing (Orange)
+            3.2, 4.0, 5.5, 7.0       # Weakly Deflected (Yellow)
+        ]
+        
+        num_rays = len(impact_multipliers)
         start_radius = 15.0
         
-        for i in range(num_rays):
+        for i, mult in enumerate(impact_multipliers):
             angle = 2 * np.pi * i / num_rays
-            # Vary impact parameters - some captured, some escape
-            impact_param = schwarzschild_radius * (2.0 + i * 0.5)
+            impact_param = schwarzschild_radius * mult
+            
+            # Add 3D variation
+            z_offset = (i % 3 - 1) * 2.0  # -2, 0, or +2
+            z_velocity = i * 0.3
             
             x, y, z = calculate_light_ray(
                 start_radius, angle, impact_param, 
-                schwarzschild_radius, max_t=30
+                schwarzschild_radius, max_t=40,  # Increased time for spiraling
+                z_offset=z_offset, z_velocity=z_velocity
             )
             
             if len(x) > 0:
                 # Determine color based on trajectory
-                if np.min(np.sqrt(x**2 + y**2)) < schwarzschild_radius * 1.5:
-                    color = 'red'  # Captured or strongly deflected
-                    alpha = 0.8
+                min_r = np.min(np.sqrt(x**2 + y**2 + z**2))
+                
+                if min_r < schwarzschild_radius * 1.1:
+                    color = 'red'      # Captured
+                    alpha = 0.9
                     linewidth = 2.5
+                elif min_r < schwarzschild_radius * 1.6:
+                    color = 'orange'   # Grazing photon sphere (Strong Lensing)
+                    alpha = 0.85
+                    linewidth = 2.2
                 else:
-                    color = 'yellow'  # Escapes
+                    color = 'yellow'   # Escaped
                     alpha = 0.7
-                    linewidth = 2
+                    linewidth = 2.0
                 
                 animation_state['light_rays_data'].append({
                     'x': x, 'y': y, 'z': z,
@@ -529,45 +553,54 @@ def black_hole_visualization():
     plt.show()
 
 if __name__ == "__main__":
+    # Force UTF-8 encoding for Windows console
+    import sys
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+
     print("=" * 80)
-    print("ANIMATED BLACK HOLE VISUALIZATION WITH LIGHT RAY TELEMETRY")
+    print("ANIMATED BLACK HOLE VISUALIZATION WITH 3D PHOTON TELEMETRY")
     print("=" * 80)
-    print("\n🎬 ANIMATION FEATURES:")
+    print("\n*** ANIMATION FEATURES:")
     print("-" * 80)
-    print("▶️  PLAY button   : Start animating light rays traveling through spacetime")
-    print("⏸️  PAUSE button  : Pause animation and show complete light ray paths")
-    print("� RESET button  : Reset all parameters to default values")
+    print("PLAY button   : Start animating light rays traveling through spacetime")
+    print("PAUSE button  : Pause animation and show complete light ray paths")
+    print("RESET button  : Reset all parameters to default values")
     print()
-    print("☑️  Show Light Rays: Toggle light ray visualization on/off")
-    print("☑️  Auto-Rotate    : Enable automatic camera rotation during animation")
+    print("Show Light Rays: Toggle light ray visualization on/off")
+    print("Auto-Rotate    : Enable automatic camera rotation during animation")
     print("-" * 80)
-    print("\n💡 LIGHT RAY ANIMATION:")
+    print("\n*** LIGHT RAY ANIMATION (Now in 3D!):")
     print("-" * 80)
     print("Watch photons (light particles) travel along their curved paths!")
     print()
-    print("🟡 YELLOW rays with markers: Escaping photons")
+    print("YELLOW rays with markers: Escaping photons")
     print("   - Bent by gravity but maintain escape velocity")
     print("   - Show gravitational lensing in action")
     print()
-    print("🔴 RED rays with markers: Captured photons")
+    print("ORANGE rays with markers: Critical Scattering")
+    print("   - Grazing the Photon Sphere (1.5 Rs)")
+    print("   - Strong gravitational lensing")
+    print()
+    print("RED rays with markers: Captured photons")
     print("   - Spiral inward toward event horizon")
     print("   - Demonstrate extreme spacetime curvature")
     print()
-    print("⭕ Bright markers: Current photon position (animated)")
-    print("   - Shows real-time progression along geodesic paths")
+    print("CYAN sphere: Photon Sphere (1.5x Rs)")
+    print("   - Unstable circular orbit region")
     print("-" * 80)
-    print("\n📊 COLOR SCHEME:")
-    print("🔴 RED spacetime   : Extreme gravitational redshift (near horizon)")
-    print("🟣 PURPLE spacetime: Medium gravitational effects")
-    print("🔵 BLUE spacetime  : Weak gravitational effects (far away)")
-    print("⚫ BLACK sphere   : Event horizon (point of no return)")
+    print("\n*** COLOR SCHEME:")
+    print("RED spacetime   : Extreme gravitational redshift (near horizon)")
+    print("PURPLE spacetime: Medium gravitational effects")
+    print("BLUE spacetime  : Weak gravitational effects (far away)")
+    print("BLACK sphere   : Event horizon (point of no return)")
     print("-" * 80)
-    print("\n🎯 THE PARADOX:")
+    print("\n*** THE PARADOX:")
     print("Gabriel's Horn: FINITE VOLUME but INFINITE SURFACE AREA")
     print("Black Hole: Finite mass but INFINITE density at singularity")
     print("=" * 80)
-    print("\n🎮 READY TO EXPLORE!")
+    print("\n*** READY TO EXPLORE!")
     print("Click 'Play' to watch light rays travel through curved spacetime!")
-    print("Enable 'Auto-Rotate' for a dynamic 360° view!\n")
+    print("Enable 'Auto-Rotate' for a dynamic 360-degree view!\n")
     
     black_hole_visualization()
